@@ -18,8 +18,6 @@ import torchvision.transforms as T
 import numpy as np
 from imgcat import imgcat
 
-from collections import defaultdict
-
 torch.set_grad_enabled(False)
 
 
