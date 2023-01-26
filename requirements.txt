@@ -1,8 +1,6 @@
-adapter-transformers==3.1.0
 sacrebleu==2.0.0
 tokenizers==0.12.1
 torch==1.12.1
 torchvision==0.10.0
 tqdm==4.62.3
-transformers==4.22.1
 wandb==0.13.3
