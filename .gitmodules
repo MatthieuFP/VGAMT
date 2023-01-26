@@ -1,3 +1,4 @@
 [submodule "adapter-transformers"]
 	path = adapter-transformers
 	url = https://github.com/MatthieuFP/adapter-transformers
+	branch = vgamt
