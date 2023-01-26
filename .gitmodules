@@ -1,3 +1,0 @@
-[submodule "adapter-transformers"]
-	path = adapter-transformers
-	url = https://github.com/adapter-hub/adapter-transformers.git
