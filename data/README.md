@@ -5,6 +5,7 @@
 - **Multi30k** can be accessed [here](https://github.com/multi30k/dataset). Please request access to the images from the 2016 subset [here](https://forms.illinois.edu/sec/229675) and download the images from 2017 and 2018 subsets [here](https://drive.google.com/drive/folders/1kfgmYFL5kup51ET7WQNxYmKCvwz_Hjkt?usp=share_link).
 - **Conceptual Captions** 3M training and validation splits can be accessed [here](https://ai.google.com/research/ConceptualCaptions/download). You have to download the images using the provided url links.
 - **CoMMuTE**: our contrastive evaluation dataset made of ambiguous examples can be downloaded from [here](https://github.com/MatthieuFP/CoMMuTE).
+
 ### 2. Compute CLIP and MDETR features
 
 #### 2.1 CLIP 

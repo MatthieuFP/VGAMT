@@ -24,5 +24,5 @@ main.py --beam_size 4 --exp_name ${EXP_NAME} --dump_path ${DUMP_PATH} --data_pat
   --src_lang ${SRC_LANG} --tgt_lang ${TGT_LANG} --dropout '0.4' --batch_size 16 --optimizer 'adam,lr=0.0001' --epoch_size ${EPOCH_SIZE} \
   --eval_bleu true --max_epoch 5000 --max_len 80 --num_workers 0 --stopping_criterion 'valid_${SRC_LANG}-${TGT_LANG}_mt_bleu,10' \
   --validation_metrics 'valid_${SRC_LANG}-${TGT_LANG}_mt_bleu' --iter_seed ${seed} --other_seed ${seed} --smoothing 0.1 --save_periodic 1 \
-  --model_type mbart --cache_dir ${CACHE_HUGGINGFACE} --amp 1 --fp16 True --accumulate_gradients 4 --reload_model ${MT_MODEL_PATH} \
+  --cache_dir ${CACHE_HUGGINGFACE} --amp 1 --fp16 True --accumulate_gradients 4 --reload_model ${MT_MODEL_PATH} \
   --adapters --freeze_text_parameters --start_new_xp_from_ckpt --mix_xp .5 --prob_mask_text 0.25 --encdec_vmlm --min_epoch 80 $@
