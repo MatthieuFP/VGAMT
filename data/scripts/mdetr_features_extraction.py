@@ -5,11 +5,10 @@ Created on 21/02/2022
 
 @author: matthieufuteral-peter
 """
-
+import json
 import os
 import pickle
 import argparse
-import pdb
 from tqdm import tqdm
 from multiprocessing import Pool
 from PIL import Image
@@ -30,8 +29,6 @@ def save_all(out, save_name, save_name_txt):
     np.save(os.path.join(save_path_boxes, save_name), out["boxes_loc"])
     np.save(os.path.join(save_path_features, save_name), out["features"])
     np.save(os.path.join(save_path_last_hidden_states, save_name), out["last_hidden_states"])
-    with open(os.path.join(save_path_labels, save_name_txt), "w") as f:
-        f.write("\n".join(out["labels"]))
 
 
 def print_image(path):
@@ -47,11 +44,10 @@ transform = T.Compose([
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--img_root", type=str, default="./conceptual_captions/images")
+    parser.add_argument("-i", "--img_root", type=str, default="./conceptual_captions/images/train")
     parser.add_argument("-d", "--dump_root", type=str, default="./conceptual_captions/features/mdetr_features/train")
     parser.add_argument('-l', '--list-of-images', type=str, default="./conceptual_captions/train.order")
     parser.add_argument('--text', type=str, default="./conceptual_captions/train.en")
-    parser.add_argument('--num_split', type=str, default='')
     parser.add_argument('-t', '--threshold', type=float, default=0.5)
     parser.add_argument('-p', '--parallel', action='store_true', help='Parallel dumper process for output files.')
     args = parser.parse_args()
@@ -63,7 +59,6 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    torch.hub.set_dir("/gpfsstore/rech/ncm/ueh14bh/mdetr_model")
     model, postprocessor = torch.hub.load('ashkamath/mdetr:main', 'mdetr_efficientnetB5', pretrained=True,
                                           return_postprocessor=True)
 
@@ -71,28 +66,12 @@ if __name__ == "__main__":
     model.eval()
 
     with open(args.list_of_images, "r") as f:
-        img_list = f.read().split("\n")
+        img_list = f.read().strip("\n").split("\n")
 
-    subsplit = os.path.basename(args.list_of_images).replace(".order", "")
-    #text_subsplit = os.path.join(os.path.dirname(args.img_root), "raw", subsplit + ".en")
-    text_subsplit = args.text
-
-    with open(text_subsplit, "r") as f:
-        txt_list = f.read().split("\n")
+    with open(args.text, "r") as f:
+        txt_list = f.read().strip("\n").split("\n")
 
     txt_list = [txt.lower() for txt in txt_list]
-
-    if not img_list[-1]:
-        img_list = img_list[:-1]
-
-    if not txt_list[-1]:
-        txt_list = txt_list[:-1]
-
-    if args.num_split:
-        tot = len(txt_list)
-        chunk = tot // 100
-        txt_list = txt_list[int(args.num_split) * chunk: (int(args.num_split) + 1) * chunk]
-        img_list = img_list[int(args.num_split) * chunk: (int(args.num_split) + 1) * chunk]
 
     assert len(img_list) == len(txt_list)
     no_bb_detected = 0
@@ -107,6 +86,7 @@ if __name__ == "__main__":
     os.makedirs(save_path_labels, exist_ok=True)
     os.makedirs(save_path_last_hidden_states, exist_ok=True)
 
+    labels = {}
     for idx, (im_name, caption) in tqdm(enumerate(zip(img_list, txt_list), 1)):
         path_img = os.path.join(args.img_root, im_name)
         save_name = im_name + ".npy" if "conceptual_captions" not in args.dump_root else im_name.split("/")[-1] + ".npy"
@@ -151,7 +131,6 @@ if __name__ == "__main__":
         empty_text_pos = [i for i in range(bboxes.shape[0]) if i not in positions]
         for pos in empty_text_pos:
             positive_tokens.append([pos, 255])
-        #predicted_spans = defaultdict(str)
         predicted_spans = {}
         for tok in positive_tokens:
             item, pos = tok
@@ -160,39 +139,29 @@ if __name__ == "__main__":
             sent_tokenized = memory_cache["tokenized"]['input_ids'][0].cpu()
             if pos < 255:
                 predicted_spans[item].append(sent_tokenized[pos])
-                #span = memory_cache["tokenized"].token_to_chars(0, pos)
-                #predicted_spans[item] += " " + caption[span.start:span.end]
+
         labels = [model.transformer.tokenizer.decode(predicted_spans[k]) for k in sorted(list(predicted_spans.keys()))]
         labels = [lab.strip() for lab in labels]
         idx = [1 if lab else 0 for lab in labels]
         labels = [lab for i, lab in zip(idx, labels) if i]
 
         _idx = torch.where(torch.LongTensor(idx) == 1)
-        try:
-            out = {
+
+        out = {
                 "features": proj_queries[_idx, :] if proj_queries.shape[0] == 1 and not _idx[0].size(0) == 0 or _idx[0].size(0) == 1 else proj_queries[_idx],
                 "boxes_loc": bboxes[_idx, :] if bboxes.shape[0] == 1 and not _idx[0].size(0) == 0 or _idx[0].size(0) == 1 else bboxes[_idx],
                 "scores": scores[_idx][None] if scores.shape == (1,) and not _idx[0].size(0) == 0 or _idx[0].size(0) == 1 else scores[_idx],
-                "last_hidden_states": last_hidden_states[_idx, :] if last_hidden_states.shape[0] == 1 and not _idx[0].size(0) == 0 or _idx[0].size(0) == 1 else proj_queries[_idx],
-                "labels": labels
+                "last_hidden_states": last_hidden_states[_idx, :] if last_hidden_states.shape[0] == 1 and not _idx[0].size(0) == 0 or _idx[0].size(0) == 1 else proj_queries[_idx]
             }
-        except:
-            pdb.set_trace()
 
-        if not len(out["features"]) == len(out["boxes_loc"]) == len(out["scores"]) == len(out["labels"]) == len(out["last_hidden_states"]):
-            pdb.set_trace()
+        labels[save_name_txt.split(".")[0]] = "\n".join(labels).strip("\n")
 
         if args.parallel:
             pool.apply_async(save_all, (out, save_name, save_name_txt))
         else:
             save_all(out, save_name, save_name_txt)
 
-        """
-        dirname, fname = os.path.split(path_dump)
-        new_fname = fname.split(".")[0] + ".txt"
-        fname_txt_path = os.path.join(dirname, "labels", new_fname)
-        with open(fname_txt_path, "w") as f:
-            f.write("\n".join(labels))
-        """
+    with open(os.path.join(save_path_labels, "labels.json"), "w") as fj:
+        json.dump(labels, fj)
 
     print(f"No detected bb in {no_bb_detected}/{len(img_list)}")

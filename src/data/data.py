@@ -32,7 +32,7 @@ class TextDataset(IterableDataset):
         self.params = params
         self.split = split
         self.data_path = params.data_path if not params.mix_xp else params.data_mix_path
-        self.src_text_path = os.path.join(self.data_path, f"{split}.sub.{params.src_lang}")
+        self.src_text_path = os.path.join(self.data_path, f"{split}.{params.src_lang}")
 
     def read_file(self, f_path):
         with open(f_path, "r") as f_object:
@@ -65,8 +65,8 @@ class ImageDataset(IterableDataset):
         self.params = params
         self.split = split
         self.data_path = params.data_path if not params.mix_xp else params.data_mix_path
-        self.src_text_path = os.path.join(self.data_path, f"{split}.sub.{params.src_lang}")
-        self.image_order = open(os.path.join(self.data_path, f"{split}.sub.order")).read().split("\n")
+        self.src_text_path = os.path.join(self.data_path, f"{split}.{params.src_lang}")
+        self.image_order = open(os.path.join(self.data_path, f"{split}.order")).read().split("\n")
 
         self.img_features_path = {}
         if len(params.features_path.split(",")) == 2:
@@ -148,7 +148,7 @@ class ParallelImageDataset(IterableDataset):
         self.params = params
         self.src_text_path = os.path.join(params.data_path, f"{split}.{params.src_lang}")
         self.tgt_text_path = os.path.join(params.data_path, f"{split}.{params.tgt_lang}")
-        self.image_order = open(os.path.join(params.data_path, f"{split}.order")).read().split("\n")
+        self.image_order = open(os.path.join(params.data_path, f"{split}.order")).read().strip("\n").split("\n")
 
         self.img_features_path = {}
         if len(params.features_path.split(",")) == 2:
@@ -174,9 +174,11 @@ class ParallelImageDataset(IterableDataset):
             self.features["clip"] = self.img_features_path["clip"]
 
     def load_mdetr_labels(self):
-        labels_path = os.path.join(self.img_features_path["mdetr"], "labels")
-        self.labels = {fname.replace(".txt", ""): open(os.path.join(labels_path, fname), "r").read().strip("\n")
-                       for fname in os.listdir(labels_path) if fname.endswith(".txt")}
+
+        labels_path = os.path.join(self.img_features_path["mdetr"], "labels", "labels.json")
+        with open(labels_path, "r") as fj:
+            self.labels = json.load(fj)
+        self.labels = {fname.replace(".txt", ""): v for fname, v in self.labels.items()}
 
     def read_file(self, f_path1, f_path2):
         with open(f_path1, "r") as f1_object, open(f_path2, "r") as f2_object:
@@ -348,9 +350,11 @@ class ParallelImageEvaluationDataset(Dataset):
             self.features["clip"] = self.img_features_path["clip"]
 
     def load_mdetr_labels(self):
-        labels_path = os.path.join(self.img_features_path["mdetr"], "labels")
-        self.labels = {fname.replace(".txt", ""): open(os.path.join(labels_path, fname), "r").read().strip("\n")
-                       for fname in os.listdir(labels_path) if fname.endswith(".txt")}
+
+        labels_path = os.path.join(self.img_features_path["mdetr"], "labels", "labels.json")
+        with open(labels_path, "r") as fj:
+            self.labels = json.load(fj)
+        self.labels = {fname.replace(".txt", ""): v for fname, v in self.labels.items()}
 
     def __len__(self):
         return len(self.src_text_data)
@@ -426,9 +430,11 @@ class ImageEvaluationDataset(Dataset):
             self.features["clip"] = os.path.join(self.img_features_path["clip"], self.split)
 
     def load_mdetr_labels(self):
-        labels_path = os.path.join(self.img_features_path["mdetr"], self.split, "labels")
-        self.labels = {fname.replace(".txt", ""): open(os.path.join(labels_path, fname), "r").read().strip("\n")
-                       for fname in os.listdir(labels_path) if fname.endswith(".txt")}
+
+        labels_path = os.path.join(self.img_features_path["mdetr"], self.split, "labels", "labels.json")
+        with open(labels_path, "r") as fj:
+            self.labels = json.load(fj)
+        self.labels = {fname.replace(".txt", ""): v for fname, v in self.labels.items()}
 
     def __len__(self):
         return len(self.src_text_data)
@@ -529,9 +535,10 @@ class CommuteEvaluationDataset(Dataset):
             self.features["clip"] = self.img_features_path["clip"]
 
     def load_mdetr_labels(self):
-        labels_path = os.path.join(self.img_features_path["mdetr"], "labels")
-        self.labels = {fname.replace(".txt", ""): open(os.path.join(labels_path, fname), "r").read().strip("\n")
-                       for fname in os.listdir(labels_path) if fname.endswith(".txt")}
+        labels_path = os.path.join(self.img_features_path["mdetr"], "labels", "labels.json")
+        with open(labels_path, "r") as fj:
+            self.labels = json.load(fj)
+        self.labels = {fname.replace(".txt", ""): v for fname, v in self.labels.items()}
 
     def __len__(self):
         return len(self.src_text_data)
