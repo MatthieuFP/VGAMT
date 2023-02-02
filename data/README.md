@@ -1,4 +1,4 @@
-# Extract visual features
+# Download and preprocess data
 
 ### 1. Download data
 
