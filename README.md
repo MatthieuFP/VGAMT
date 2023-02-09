@@ -89,7 +89,7 @@ Inform METEOR_FILE, REFERENCE_PATH, HYPOTHESIS_PATH and TGT_LANG variables. To i
 
 - **COMET scores**:
 
-Inform REFERENCE_SRC_LG, REFERENCE_TGT_LG, HYPOTHESIS_TGT_LG, PATH_TO_COMET_STORAGE. To install comet, please have a look [here](https://github.com/Unbabel/COMET). Then, run _./scripts/eval/eval_comet.sh_
+Inform REFERENCE_SRC_LG, REFERENCE_TGT_LG, HYPOTHESIS_TGT_LG, PATH_TO_COMET_STORAGE. To install comet, please have a look [here](https://github.com/Unbabel/COMET). In our work, we use the _wmt20-comet-da_ model. Then, run _./scripts/eval/eval_comet.sh_
 
 - **CoMMuTE ranking accuracy**:
 
