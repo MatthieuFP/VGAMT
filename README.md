@@ -20,6 +20,12 @@ If you use our codebase, please cite:
 }
 ```
 
+### Clone repository with submodules
+
+```
+git clone --recurse-submodules https://github.com/MatthieuFP/VGAMT.git
+```
+
 # Data preparation
 
 In this work, we exploit OPUS text-only, Multi30k multilingual text-image and Conceptual Caption English text-image data. To download and extract the features we use in our work, please follow the instructions [here](https://github.com/MatthieuFP/VGAMT/blob/main/data/README.md). 
