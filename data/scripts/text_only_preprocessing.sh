@@ -12,7 +12,7 @@ SRC="$1"
 TGT="$2"
 
 
-DATA_PATH="PATH/TO/TEXT-ONLY/DATA/${SRC}-${TGT}"
+DATA_PATH="./text-only/${SRC}-${TGT}"
 dataset=(opensubtitles wikipedia ted2020 ted2013 books)
 
 
@@ -20,7 +20,7 @@ for data_set in "${dataset[@]}"; do
   echo ${data_set}
   dir_name="${DATA_PATH}/${data_set}"
   src_raw_file="${dir_name}/*${SRC}"
-  tgt_raw_file="${dir_name}/*{TGT}"
+  tgt_raw_file="${dir_name}/*${TGT}"
   for file in ${src_raw_file} ${tgt_raw_file}; do
     fname=`basename ${file}`
     lg=${fname: -2}

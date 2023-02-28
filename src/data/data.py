@@ -20,7 +20,7 @@ def split_dataset(params):
         test_set = ParallelEvaluationDataset(params, split="test")
     else:
         train_set = ParallelDataset(params, split="train")
-        valid_set = ParallelEvaluationDataset(params, split="dev" if "multi30k" not in params.data_path else "val")
+        valid_set = ParallelEvaluationDataset(params, split="val") 
         test_set = ParallelEvaluationDataset(params, split="test")
     return train_set, valid_set, test_set
 

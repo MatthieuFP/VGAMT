@@ -5,9 +5,10 @@
 ```
 cd ./data
 ```
+
 #### Text-only data
 
-Please download data from the [open parallel corpus](https://opus.nlpl.eu/). To reproduce our results, you must preprocess data in the following way:
+Please download data from the [open parallel corpus](https://opus.nlpl.eu/) to ./text-only/${SRC}-${TGT} folders. We used OpenSubtitles_v2018, Books_v1 (not available in cs), Wikipedia_v1.0, TED2020_v1 and TED2013_v1.1 (not available in cs) for our experiments. To reproduce our results, you must preprocess data in the following way (WARNING! It could be long):
 
 ```
 git clone https://github.com/moses-smt/mosesdecoder.git
@@ -15,9 +16,15 @@ SRC=en
 TGT={fr,de,cs}
 sh scripts/text_only_preprocessing.sh ${SRC} ${TGT}
 cd ./text_only/${SRC}-${TGT}
-cat clean.${SRC} clean.${TGT} | shuf > data.${SRC}${TGT}
-head -n -5000 data.${SRC}${TGT} > train.${SRC}${TGT}
-tail -n 5000 data.${SRC}${TGT} > val.${SRC}${TGT}
+touch data.${SRC} data.${TGT}
+for file in */clean.${SRC}; do cat ${file} >> data.${SRC}; done
+for file in */clean.${TGT}; do cat ${file} >> data.${TGT}; done
+paste data.${SRC} data.${TGT} | shuf > data.${SRC}${TGT}
+head -n -10000 data.${SRC}${TGT} > train.${SRC}${TGT}
+tail -n 10000 data.${SRC}${TGT} > testval.${SRC}${TGT}
+head -n -5000 testval.${SRC}${TGT} > test.${SRC}${TGT}
+tail -n 5000 testval.${SRC}${TGT} > val.${SRC}${TGT}
+rm testval.${SRC}${TGT}
 ```
 
 #### Image-Text data

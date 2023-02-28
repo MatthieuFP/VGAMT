@@ -25,7 +25,7 @@ WANDB_MODE=offline NCCL_LL_THRESHOLD=0 python \
 main.py --beam_size 4 --exp_name ${EXP_NAME} --dump_path ${DUMP_PATH} --features_path ${FEAT_PATH}  --features_type 'mdetr+clip' \
   --data_path ${DATA_PATH} --data_mix_path ${DATA_MIX_PATH} --features_mix_path ${FEAT_PATH_MIX} --src_lang ${SRC_LANG} --tgt_lang ${TGT_LANG} --dropout '0.4' \
   --batch_size 16 --optimizer 'adam,lr=0.00001' --epoch_size ${EPOCH_SIZE} --eval_bleu true --max_epoch 5000 --max_len 80 --num_workers 0 \
-  --stopping_criterion 'valid_${SRC_LANG}-${TGT_LANG}_mt_bleu,10' --validation_metrics 'valid_${SRC_LANG}-${TGT_LANG}_mt_bleu' \
+  --stopping_criterion "valid_${SRC_LANG}-${TGT_LANG}_mt_bleu,10" --validation_metrics "valid_${SRC_LANG}-${TGT_LANG}_mt_bleu" \
   --iter_seed ${seed} --other_seed ${seed} --smoothing 0.1 --save_periodic 1 --cache_dir ${CACHE_HUGGINGFACE} --amp 1 --fp16 True \
   --accumulate_gradients 4 --reload_model ${MT_MODEL_PATH} --multimodal_model --adapters --encoder_attn_mask_text_only --freeze_text_parameters \
   --start_new_xp_from_ckpt --mix_xp .5 --prob_mask_text 0.25 --encdec_vmlm --guided_self_attention --min_epoch 80 $@

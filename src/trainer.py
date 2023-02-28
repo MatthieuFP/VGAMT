@@ -245,12 +245,6 @@ class Trainer(object):
         }
 
         logger.warning(f"Saving model parameters ...")
-        if self.params.xp_type in ["vmlm", "mlm"] and not self.params.encdec_vmlm:
-            try:
-                enc_parameters = self.params.encoder.module.encoder.state_dict()
-            except:
-                enc_parameters = self.params.encoder.encoder.state_dict()
-            self.params.model.model.encoder.state_dict().update(enc_parameters)
 
         data["model"] = self.params.model.state_dict()
 

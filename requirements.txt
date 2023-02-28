@@ -1,6 +1,7 @@
 sacrebleu==2.0.0
 tokenizers==0.12.1
+sentencepiece==0.1.97
 torch==1.12.1
-torchvision==0.10.0
 tqdm==4.62.3
 wandb==0.13.3
+python-hostlist==1.21

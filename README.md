@@ -32,6 +32,12 @@ In this work, we exploit OPUS text-only, Multi30k multilingual text-image and Co
 
 # Training
 
+Install adapter-transformers
+```
+cd adapter-transformers
+pip install .
+```
+
 Create a conda environment from the _requirements.txt_ file. This work was conducted using SLURM job scheduler. Please adapt the scripts to your local configuration.
 
 For all experiments, please fill in the following variables:
@@ -56,7 +62,6 @@ export MASTER_ADDR=$master_addr
 echo "MASTER_ADDR="$MASTER_ADDR
 
 srun ./scripts/training/train_MT_from_MBART.sh 
-sh train_MT_from_MBART.sh
 ```
 
 ### VGAMT
