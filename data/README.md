@@ -2,6 +2,9 @@
 
 ### 1. Download data
 
+```
+cd ./data
+```
 #### Text-only data
 
 Please download data from the [open parallel corpus](https://opus.nlpl.eu/). To reproduce our results, you must preprocess data in the following way:
