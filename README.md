@@ -32,13 +32,13 @@ In this work, we exploit OPUS text-only, Multi30k multilingual text-image and Co
 
 # Training
 
+Create a conda environment from the _requirements.txt_ file. This work was conducted using SLURM job scheduler. Please adapt the scripts to your local configuration.
+
 Install adapter-transformers
 ```
 cd adapter-transformers
 pip install .
 ```
-
-Create a conda environment from the _requirements.txt_ file. This work was conducted using SLURM job scheduler. Please adapt the scripts to your local configuration.
 
 For all experiments, please fill in the following variables:
 - CACHE_HUGGINGFACE
