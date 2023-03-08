@@ -76,8 +76,7 @@ if __name__ == "__main__":
     with open(args.list_of_images, "r") as f:
         img_list = f.read().strip("\n").split("\n")
 
-    if not os.path.isdir(args.dump_root):
-        os.mkdir(args.dump_root)
+    os.makedirs(os.path.join(args.dump_root, "fail"), exist_ok=True)
 
     data = ImageDataset(args, args.img_root, img_list)
     dataloader = DataLoader(data, batch_size=args.batch_size, num_workers=10, shuffle=False)

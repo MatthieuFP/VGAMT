@@ -33,15 +33,17 @@ rm testval.${SRC}${TGT}
 - **CoMMuTE**: our contrastive evaluation dataset made of ambiguous examples can be downloaded from [here](https://github.com/MatthieuFP/CoMMuTE).
 - **Conceptual Captions** 3M training and validation splits can be accessed [here](https://ai.google.com/research/ConceptualCaptions/download). You have to download the images using the provided url links:
 ```
+cd conceptual_captions
 cut -f1 -d$'\t' Train_GCC-training.tsv > train.en
 cut -f2 -d$'\t' Train_GCC-training.tsv > url.txt
 mkdir images features
+mkdir images/train
 index=0
 touch train.order
 cat url.txt | while read url; do 
     fname=$(printf "%09d\n" $index)
     echo ${fname}.jpg >> train.order; 
-    wget ${url} -O images/${fname}.jpg; 
+    wget ${url} -O images/train/${fname}.jpg; 
     index=$((index+1)); 
 done
 ```
@@ -49,19 +51,30 @@ done
 ### 2. Compute CLIP and MDETR features
 
 #### 2.1 CLIP 
+
+Create a new conda environment to run CLIP:
+```
+conda create -n clip python=3.8
+conda activate clip
+conda install --yes -c pytorch pytorch=1.7.1 torchvision cudatoolkit=11.0
+pip install ftfy regex tqdm
+pip install git+https://github.com/openai/CLIP.git
+```
+
 To extract CLIP [CLS] embedding for all Multi30k and Conceptual Captions subsets, please run the following commands:
 
 ```
-sh clip_features_extraction.sh multi30k {train,val,test_2016_flickr,test_2017_flickr,test_2018_flickr}
-sh clip_features_extraction.sh conceptual_captions {train,val}
+source activate clip
+sh ./scripts/clip_features_extraction.sh multi30k {train,val,test_2016_flickr,test_2017_flickr,test_2018_flickr}
+sh ./scripts/clip_features_extraction.sh conceptual_captions {train,val}
 ```
 
 To extract CLIP [CLS] embedding for CoMMuTE, our contrastive evaluation dataset, please run the following commands:
 ```
-DATASET=commute
+DATASET=CoMMuTE
 SUBSET=en-{fr,de,cs}
 BATCH_SIZE=100
-source activate vgamt
+source activate clip
 python ./scripts/clip_features_extraction.py -i ./${DATASET}/images \
                                              -l ./${DATASET}/${SUBSET}/img.order \
                                              -d ./${DATASET}/${SUBSET}/features/clip_features \
@@ -72,27 +85,30 @@ python ./scripts/clip_features_extraction.py -i ./${DATASET}/images \
 
 Due to compatibility issues, you need to create a new conda environment to be able to use MDETR pre-trained models:
 ```
-conda create -n mdetr_env python=3.8
-conda activate mdetr_env
-pip install -r requirements.txt
+conda create -n mdetr python=3.8.12
+conda activate mdetr
+pip install -r mdetr_requirements.txt
 ```
 
-You then have to run the following scripts to extract MDETR features:
+You then have to run the following scripts to extract MDETR features after having inform TORCH_HUB_DIR variable in _mdetr_features_extraction.sh_:
 ```
-sh mdetr_features_extraction.sh multi30k {train,val,test_2016_flickr,test_2017_flickr,test_2018_flickr}
-sh mdetr_features_extraction.sh conceptual_captions {train,val}
+source activate mdetr
+sh ./scripts/mdetr_features_extraction.sh multi30k {train,val,test_2016_flickr,test_2017_flickr,test_2018_flickr}
+sh ./scripts/mdetr_features_extraction.sh conceptual_captions {train,val}
 ```
 
 To extract MDETR features for CoMMuTE, please run the following commands:
 ```
-DATASET=commute
+DATASET=CoMMuTE
+TORCH_HUB_DIR="PATH/TO/HUB/DIR"
 SUBSET=en-{fr,de,cs}
-source activate mdetr_env
+source activate mdetr
 python ./scripts/mdetr_features_extraction.py -i ./${DATASET}/images \
                                               -d ./${DATASET}/${SUBSET}/features/mdetr_features \
                                               -l ./${DATASET}/${SUBSET}/img.order \
                                               --text ./${DATASET}/${SUBSET}/src.en \
-                                              --threshold 0.5
+                                              --threshold 0.5 \
+                                              --hub_dir ${TORCH_HUB_DIR}
 ```
 
 ### References

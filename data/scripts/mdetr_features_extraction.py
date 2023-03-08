@@ -15,7 +15,6 @@ from PIL import Image
 import torch
 import torchvision.transforms as T
 import numpy as np
-from imgcat import imgcat
 
 torch.set_grad_enabled(False)
 
@@ -29,10 +28,6 @@ def save_all(out, save_name, save_name_txt):
     np.save(os.path.join(save_path_boxes, save_name), out["boxes_loc"])
     np.save(os.path.join(save_path_features, save_name), out["features"])
     np.save(os.path.join(save_path_last_hidden_states, save_name), out["last_hidden_states"])
-
-
-def print_image(path):
-    return imgcat(Image.open(path))
 
 
 transform = T.Compose([
@@ -49,6 +44,7 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--list-of-images', type=str, default="./conceptual_captions/train.order")
     parser.add_argument('--text', type=str, default="./conceptual_captions/train.en")
     parser.add_argument('-t', '--threshold', type=float, default=0.5)
+    parser.add_argument('--hub_dir', type=str, required=True)
     parser.add_argument('-p', '--parallel', action='store_true', help='Parallel dumper process for output files.')
     args = parser.parse_args()
 
@@ -59,6 +55,7 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    torch.hub.set_dir(args.hub_dir)
     model, postprocessor = torch.hub.load('ashkamath/mdetr:main', 'mdetr_efficientnetB5', pretrained=True,
                                           return_postprocessor=True)
 
@@ -86,7 +83,7 @@ if __name__ == "__main__":
     os.makedirs(save_path_labels, exist_ok=True)
     os.makedirs(save_path_last_hidden_states, exist_ok=True)
 
-    labels = {}
+    all_labels = {}
     for idx, (im_name, caption) in tqdm(enumerate(zip(img_list, txt_list), 1)):
         path_img = os.path.join(args.img_root, im_name)
         save_name = im_name + ".npy" if "conceptual_captions" not in args.dump_root else im_name.split("/")[-1] + ".npy"
@@ -154,7 +151,7 @@ if __name__ == "__main__":
                 "last_hidden_states": last_hidden_states[_idx, :] if last_hidden_states.shape[0] == 1 and not _idx[0].size(0) == 0 or _idx[0].size(0) == 1 else proj_queries[_idx]
             }
 
-        labels[save_name_txt.split(".")[0]] = "\n".join(labels).strip("\n")
+        all_labels[save_name_txt.split(".")[0]] = "\n".join(labels).strip("\n")
 
         if args.parallel:
             pool.apply_async(save_all, (out, save_name, save_name_txt))
@@ -162,6 +159,6 @@ if __name__ == "__main__":
             save_all(out, save_name, save_name_txt)
 
     with open(os.path.join(save_path_labels, "labels.json"), "w") as fj:
-        json.dump(labels, fj)
+        json.dump(all_labels, fj)
 
     print(f"No detected bb in {no_bb_detected}/{len(img_list)}")
