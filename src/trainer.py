@@ -1131,14 +1131,11 @@ class Trainer(object):
 
             with torch.no_grad():
                 with autocast():
-                    try:
-                        outputs = model(input_ids=src_input_idx,
-                                        attention_mask=src_attention_mask if guided_self_attn is None else guided_self_attn,
-                                        decoder_input_ids=tgt_input_idx[:, :-1], labels=tgt_input_idx[:, 1:],
-                                        img_features=img_features, return_dict=False, text_len=text_len)
-                    except:
-                        import pdb
-                        pdb.set_trace()
+                    outputs = model(input_ids=src_input_idx,
+                                    attention_mask=src_attention_mask if guided_self_attn is None else guided_self_attn,
+                                    decoder_input_ids=tgt_input_idx[:, :-1], labels=tgt_input_idx[:, 1:],
+                                    img_features=img_features, return_dict=False, text_len=text_len)
+                    
 
                     inc_outputs = model(input_ids=src_input_idx,
                                         attention_mask=src_attention_mask if guided_self_attn is None else guided_self_attn,
