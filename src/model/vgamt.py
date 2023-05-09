@@ -271,7 +271,7 @@ class MultimodalTransformerModel(MBartModel):
         if self.params.encoder_attn_mask_text_only:
             text_len = input_ids.size(1) if input_ids is not None else text_len
             encoder_hidden_states = encoder_outputs[0][:, -text_len:]
-            if self.params.guided_self_attention or len(attention_mask.size()) == 3:
+            if len(attention_mask.size()) == 3:  # if guided self-attention for instance, get the block text only in the attention masks.
                 attention_mask = attention_mask[:, -text_len:, -text_len:][:, 0, :]
             else:
                 attention_mask = attention_mask[:, -text_len:]

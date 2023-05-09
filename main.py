@@ -116,7 +116,7 @@ def get_parser():
                         help="Validation metrics")
     parser.add_argument("--accumulate_gradients", type=int, default=1,
                         help="Accumulate model gradients over N iterations (N times larger batch sizes)")
-    parser.add_argument("--smoothing", type=float, default=0.1,
+    parser.add_argument("--smoothing", type=float, default=0.0,
                         help="Label smoothing")
 
     # beam search (for MT only)

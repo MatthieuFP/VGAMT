@@ -479,7 +479,7 @@ class Trainer(object):
         if clip_features[0] is None:
             clip_features = None
             clip_ft = False
-        if mdetr_features[0] is None:
+        if mdetr_features[0] is None or mdetr_features.size(1) == 0:
             mdetr_features = None
             boxes_loc = None
             mdetr_ft = False
@@ -503,8 +503,11 @@ class Trainer(object):
 
             if mdetr_ft:
                 img_attn = self.get_img_attn_mask(mdetr_features)
-            else:
+            elif not mdetr_ft and clip_ft:
                 img_attn = torch.ones((bs, 1))
+            else:
+                img_attn = None
+
             if clip_ft and mdetr_ft:
                 img_attn = img_attn.unsqueeze(1).repeat(1, img_attn.size(1), 1)
                 n_obj = img_attn.size(1)
@@ -520,15 +523,16 @@ class Trainer(object):
                     reverse_cross_attn = torch.cat((src_attn.unsqueeze(-1), reverse_cross_attn), dim=-1)
                 guided_self_attn_mask = self.build_guided_self_attention(src_attn, cross_attn, reverse_cross_attn, img_attn)
 
-            if len(img_attn.size()) == 3:
-                img_attn1d = torch.cat((torch.ones(bs, 1).long(), self.get_img_attn_mask(mdetr_features)), dim=-1)
-                i2t_attn = src_attn.unsqueeze(1).repeat(1, img_attn.size(1), 1)
-                full_img_attn = torch.cat((img_attn, i2t_attn), dim=-1)
-                txt_attn = src_attn.unsqueeze(-1).repeat(1, 1, slen)
-                full_txt_attn = torch.cat((img_attn1d.unsqueeze(1).repeat(1, slen, 1), txt_attn), dim=-1)
-                src_attn = torch.cat((full_img_attn, full_txt_attn), dim=1)
-            else:
-                src_attn = torch.cat((img_attn, src_attn), dim=-1)
+            if img_attn is not None:
+                if len(img_attn.size()) == 3:
+                    img_attn1d = torch.cat((torch.ones(bs, 1).long(), self.get_img_attn_mask(mdetr_features)), dim=-1)
+                    i2t_attn = src_attn.unsqueeze(1).repeat(1, img_attn.size(1), 1)
+                    full_img_attn = torch.cat((img_attn, i2t_attn), dim=-1)
+                    txt_attn = src_attn.unsqueeze(-1).repeat(1, 1, slen)
+                    full_txt_attn = torch.cat((img_attn1d.unsqueeze(1).repeat(1, slen, 1), txt_attn), dim=-1)
+                    src_attn = torch.cat((full_img_attn, full_txt_attn), dim=1)
+                else:
+                    src_attn = torch.cat((img_attn, src_attn), dim=-1)
 
             if mode != "commute":
                 return (src_inps, src_attn), (tgt_inps, None), (clip_features, mdetr_features, boxes_loc, guided_self_attn_mask)
@@ -1115,6 +1119,7 @@ class Trainer(object):
             (src_input_idx, src_attention_mask), (tgt_input_idx, _), (incorrect_input_idx, _), (
             clip_features, mdetr_features, boxes_loc, guided_self_attn) \
                 = self.preprocessing_mmt(batch, "commute")
+            
             text_len = src_input_idx.size(1)
 
             src_input_idx, src_attention_mask, tgt_input_idx, incorrect_input_idx, clip_features, mdetr_features, \
@@ -1126,10 +1131,14 @@ class Trainer(object):
 
             with torch.no_grad():
                 with autocast():
-                    outputs = model(input_ids=src_input_idx,
-                                    attention_mask=src_attention_mask if guided_self_attn is None else guided_self_attn,
-                                    decoder_input_ids=tgt_input_idx[:, :-1], labels=tgt_input_idx[:, 1:],
-                                    img_features=img_features, return_dict=False, text_len=text_len)
+                    try:
+                        outputs = model(input_ids=src_input_idx,
+                                        attention_mask=src_attention_mask if guided_self_attn is None else guided_self_attn,
+                                        decoder_input_ids=tgt_input_idx[:, :-1], labels=tgt_input_idx[:, 1:],
+                                        img_features=img_features, return_dict=False, text_len=text_len)
+                    except:
+                        import pdb
+                        pdb.set_trace()
 
                     inc_outputs = model(input_ids=src_input_idx,
                                         attention_mask=src_attention_mask if guided_self_attn is None else guided_self_attn,
