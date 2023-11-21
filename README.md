@@ -10,13 +10,24 @@
 
 If you use our codebase, please cite:
 ```
-@article{vgamt,
-  doi = {10.48550/ARXIV.2212.10140},
-  url = {https://arxiv.org/abs/2212.10140},
-  author = {Futeral, Matthieu and Schmid, Cordelia and Laptev, Ivan and Sagot, Benoît and Bawden, Rachel},
-  title = {Tackling Ambiguity with Images: Improved Multimodal Machine Translation and Contrastive Evaluation},
-  publisher = {arXiv},
-  year = {2022}
+@inproceedings{futeral-etal-2023-tackling,
+    title = "Tackling Ambiguity with Images: Improved Multimodal Machine Translation and Contrastive Evaluation",
+    author = "Futeral, Matthieu  and
+      Schmid, Cordelia  and
+      Laptev, Ivan  and
+      Sagot, Beno{\^\i}t  and
+      Bawden, Rachel",
+    editor = "Rogers, Anna  and
+      Boyd-Graber, Jordan  and
+      Okazaki, Naoaki",
+    booktitle = "Proceedings of the 61st Annual Meeting of the Association for Computational Linguistics (Volume 1: Long Papers)",
+    month = jul,
+    year = "2023",
+    address = "Toronto, Canada",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2023.acl-long.295",
+    doi = "10.18653/v1/2023.acl-long.295",
+    pages = "5394--5413"
 }
 ```
 
